@@ -38,8 +38,7 @@ dev = [
     "flake8",
     "mypy",
     "types-tqdm",
-    "types-requests"
-
+    "types-requests",
 ]
 docs = [
     "sphinx",
