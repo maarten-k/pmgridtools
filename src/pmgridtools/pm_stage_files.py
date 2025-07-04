@@ -33,7 +33,8 @@ def get_pnfs(url: str) -> str:
             )
         else:
             print(
-                f"invalled URL: only gsiftp:// , srm:// url or local paths in the /project/projectmine/Data/GridStorage/ dir may be used: found the following:{url}"
+                f"Invalid URL: only gsiftp:// or local paths under /project/projectmine/Data/GridStorage/ "
+                f"allowed. Found: {url}"
             )
 
             sys.exit(1)
@@ -149,7 +150,7 @@ def main():
     ) as pbar:
         while True:
             starttime = int(time.time())
-            filesstaged, releasedbytes = stagemanager.checkstaged()
+            _, releasedbytes = stagemanager.checkstaged()
             # TODO: create option to print released files to stdout
             pbar.update(releasedbytes)
             # stop staging if no files are left to be staged
@@ -158,17 +159,22 @@ def main():
                 print("staging done", file=sys.stderr)
                 break
 
-            sleeptime = retryinterval - (int(time.time()) - starttime)
-            # increase retry interval if sleeptime is to small, so progress bar is shown
-            if sleeptime < 20:
-                retryinterval *= 2
-                sleeptime = 60
-            # print(sleeptime)
-            logging.debug(f"sleep until next online check {max(0, sleeptime)} seconds")
-            # sleep interval of 1 sec makes it able to exit the script with control+c after one sec instead of 600 sec
+            sleeping(retryinterval, starttime)
 
-            for _ in range(max(0, sleeptime * 10)):
-                time.sleep(0.1)
+
+def sleeping(retryinterval, starttime):
+    sleeptime = retryinterval - (int(time.time()) - starttime)
+    # increase retry interval if sleeptime is to small, so progress bar is shown
+    if sleeptime < 20:
+        retryinterval *= 2
+        sleeptime = 60
+        # print(sleeptime)
+    logging.debug(f"sleep until next online check {max(0, sleeptime)} seconds")
+    # sleep interval of 1 sec makes it able to exit the script with control+c
+    # after one sec instead of 600 sec
+
+    for _ in range(max(0, sleeptime * 10)):
+        time.sleep(0.1)
 
 
 if __name__ == "__main__":

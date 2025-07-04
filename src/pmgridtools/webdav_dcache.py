@@ -1,9 +1,7 @@
 import os
 import xml.etree.ElementTree as ET
-import re
 
 import requests
-
 
 
 class WebDav:
@@ -45,13 +43,14 @@ class WebDav:
 
     def locality(self, url):
         """
-
         :param self:
         :param url:
         :return: ONLINE ,NEARLINE or ONLINE_AND_NEARLINE
         """
         return self.extract_locality_and_access_latencty(
-            '<?xml version="1.0"?><a:propfind xmlns:a="DAV:"><a:prop><srm:FileLocality xmlns:srm="http://srm.lbl.gov/StorageResourceManager"/></a:prop></a:propfind>',
+            '<?xml version="1.0"?><a:propfind xmlns:a="DAV:">'
+            '<a:prop><srm:FileLocality xmlns:srm="http://srm.lbl.gov/StorageResourceManager"/>'
+            "</a:prop></a:propfind>",
             url,
             "{http://srm.lbl.gov/StorageResourceManager}FileLocality",
         )
@@ -64,7 +63,9 @@ class WebDav:
         :return: "NEARLINE" or "ONLINE"
         """
         return self.extract_locality_and_access_latencty(
-            '<?xml version="1.0"?><a:propfind xmlns:a="DAV:"><a:prop><srm:AccessLatency xmlns:srm="http://srm.lbl.gov/StorageResourceManager"/></a:prop></a:propfind>',
+            '<?xml version="1.0"?><a:propfind xmlns:a="DAV:">'
+            '<a:prop><srm:AccessLatency xmlns:srm="http://srm.lbl.gov/StorageResourceManager"/>'
+            "</a:prop></a:propfind>",
             url,
             "{http://srm.lbl.gov/StorageResourceManager}AccessLatency",
         )

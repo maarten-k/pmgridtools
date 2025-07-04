@@ -43,7 +43,7 @@ class dcacheapy:
     def stage(self, pnfs, lifetime=3):
         if pnfs.__class__ == "str":
             pnfs = [pnfs]
-        # curl --capath /etc/grid-security/certificates --cert /home/projectmine-mkooyman/.proxy --cacert /home/projectmine-mkooyman/.proxy -H 'accept: application/json' --fail --silent --show-error --ipv4 -H 'content-type: application/json' -X POST https://dcacheview.grid.surfsara.nl:22882/api/v1/bulk-requests -d '{"activity": "PIN", "arguments": {"lifetime": "7", "lifetimeUnit":"DAYS"}, "target": ["//pnfs/grid.sara.nl/data/lsgrid/Project_MinE/Realignment/hg38/Netherlands/Tape/NovaSeqHartwig/HW0174512325/HW0174512325.final-gatk.cram","//pnfs/grid.sara.nl/data/lsgrid/Project_MinE/Realignment/hg38/Netherlands/Tape/NovaSeqHartwig/HW0174512325/HW0174512325.final-gatk.cram.crai"], "expand_directories": "TARGETS"}' --dump-header -
+
         headers = {"accept": "application/json", "content-type": "application/json"}
         data = {
             "activity": "PIN",
@@ -76,7 +76,6 @@ class dcacheapy:
         if response.ok:
             return response.json()["fileLocality"]
         else:
-
             raise (f"fubar {response}")
 
     # def access_latency(self, url):
@@ -87,7 +86,9 @@ class dcacheapy:
     #     :return: "NEARLINE" or "ONLINE"
     #     """
     #     return self.extract_locality_and_access_latencty(
-    #         '<?xml version="1.0"?><a:propfind xmlns:a="DAV:"><a:prop><srm:AccessLatency xmlns:srm="http://srm.lbl.gov/StorageResourceManager"/></a:prop></a:propfind>',
+    #         '<?xml version="1.0"?><a:propfind xmlns:a="DAV:">
+    # <a:prop><srm:AccessLatency xmlns:srm="http://srm.lbl.gov/StorageResourceManager"/>
+    # </a:prop></a:propfind>',
     #         url,fileLocality
     #         "{http://srm.lbl.gov/StorageResourceManager}AccessLatency",
     #     )

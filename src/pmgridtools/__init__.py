@@ -6,11 +6,10 @@ with grids, meshes, and spatial data.
 """
 
 __version__ = "0.1.0"
-__author__ = "PMGridTools Contributors"
-__email__ = "your.email@example.com"
+__author__ = "Maarten Kooyman"
+__email__ = "maarten@oyat.nl"
 
-from .grid2d import Grid2D
+# from .grid2d import Grid2D
+# from .exceptions import GridError, IndexOutOfBoundsError
 
-__all__ = [
-    "Grid2D",
-]
+__all__ = []

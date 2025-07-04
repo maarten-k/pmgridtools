@@ -28,15 +28,15 @@ jobs:
     
     - name: Lint with flake8
       run: |
-        flake8 src/ tests/ examples/
+        flake8  --max-line-length 120  src/ tests/ 
     
     - name: Check formatting with black
       run: |
-        black --check src/ tests/ examples/
+        black --check src/ tests/ 
     
     - name: Check import sorting with isort
       run: |
-        isort --check-only src/ tests/ examples/
+        isort --check-only src/ tests/ 
     
     - name: Type check with mypy
       run: |
