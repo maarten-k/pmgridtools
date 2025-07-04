@@ -6,6 +6,7 @@ import os
 import re
 import sys
 import time
+from typing import Dict, List, Set, Tuple
 
 import tqdm
 
@@ -14,9 +15,10 @@ import pmgridtools.api_dcache as api_dcache
 
 def get_pnfs(url: str) -> str:
     """
+    Convert URL to PNFS path.
 
-    :param url:
-    :return:
+    :param url: Input URL or local path
+    :return: PNFS path
     """
     url = url.strip()
     pnfs = None
@@ -44,18 +46,31 @@ def get_pnfs(url: str) -> str:
 
 
 class StageManager:
-    def __init__(self):
-        self.files2stage = {}
-        self.staging = []
-        self.dcacheapy = api_dcache.dcacheapy()
+    """Manages file staging operations."""
+    
+    def __init__(self) -> None:
+        """Initialize the StageManager."""
+        self.files2stage: Dict[str, int] = {}
+        self.staging: List[str] = []
+        self.dcacheapy: api_dcache.dcacheapy = api_dcache.dcacheapy()
 
-    def add_files(self, jobs):
+    def add_files(self, jobs: Dict[str, int]) -> None:
+        """
+        Add files to the staging queue.
+        
+        :param jobs: Dictionary mapping file paths to file sizes
+        """
         self.files2stage = jobs
 
-    def stage(self, max_stage_gb=200):
-        # todo check amount of data already staged
-        data2stage = 0
-        stagenow = []
+    def stage(self, max_stage_gb: int = 200) -> None:
+        """
+        Stage files up to the specified limit.
+        
+        :param max_stage_gb: Maximum data to stage in GB
+        """
+        # TODO: check amount of data already staged
+        data2stage: int = 0
+        stagenow: List[str] = []
         for file, filesize in self.files2stage.items():
             if file not in self.staging:
                 data2stage = data2stage + filesize
@@ -66,14 +81,19 @@ class StageManager:
         if stagenow:
             self.dcacheapy.stage(stagenow, lifetime=3)
 
-    def checkstaged(self):
+    def checkstaged(self) -> Tuple[Set[str], int]:
+        """
+        Check which files have been staged and update internal state.
+        
+        :return: Tuple of (released files set, total size released)
+        """
         self.stage()
-        sizereleased = 0
-        released = set()
-        for pnfs in self.staging:
+        sizereleased: int = 0
+        released: Set[str] = set()
+        for pnfs in self.staging[:]:  # Create a copy to iterate over
             if "ONLINE" in self.dcacheapy.locality(pnfs):
                 self.staging.remove(pnfs)
-                sizereleased = +self.files2stage[pnfs]
+                sizereleased += self.files2stage[pnfs]
                 del self.files2stage[pnfs]
                 released.add(pnfs)
         return (released, sizereleased)
@@ -84,16 +104,16 @@ class StageManager:
 # solve full path of localfiles
 
 
-def main():
+def main() -> None:
     """Main entry point for the pm_stage_files script."""
-    logger = logging.getLogger()
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter("%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
+    logger: logging.Logger = logging.getLogger()
+    handler: logging.StreamHandler = logging.StreamHandler()
+    formatter: logging.Formatter = logging.Formatter("%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     logger.setLevel(logging.WARN)
 
-    parser = argparse.ArgumentParser(description="stage files from tape")
+    parser: argparse.ArgumentParser = argparse.ArgumentParser(description="stage files from tape")
     parser.add_argument(
         "to_stage_raw",
         metavar="N",
@@ -103,23 +123,23 @@ def main():
         default=None,
     )
 
-    args = parser.parse_args()
+    args: argparse.Namespace = parser.parse_args()
 
     if sys.stdin.isatty():
-        rawfiles = args.to_stage_raw
+        rawfiles: List[str] = args.to_stage_raw
     else:
         rawfiles = [line.strip() for line in sys.stdin.readlines()]
 
     if len(rawfiles) == 0:
         exit("no input files")
 
-    cleanpnfs = [get_pnfs(rfile) for rfile in rawfiles]
+    cleanpnfs: List[str] = [get_pnfs(rfile) for rfile in rawfiles]
     # check filesize and staged
-    allsizes = {}
-    totalsize = 0
-    cleanpnfs_offline = []
-    files2pin = []
-    dcache = api_dcache.dcacheapy()
+    allsizes: Dict[str, int] = {}
+    totalsize: int = 0
+    cleanpnfs_offline: List[str] = []
+    files2pin: List[str] = []
+    dcache: api_dcache.dcacheapy = api_dcache.dcacheapy()
 
     for pnfs in tqdm.tqdm(cleanpnfs, ascii=True, desc="checking staged"):
         try:
@@ -137,41 +157,46 @@ def main():
     totalsize = 0
 
     for pnfs in tqdm.tqdm(cleanpnfs_offline, ascii=True, desc="getting file size"):
-        dc_size = dcache.size(pnfs)
+        dc_size: int = dcache.size(pnfs)
         allsizes[pnfs] = dc_size
         totalsize += dc_size
 
-    stagemanager = StageManager()
+    stagemanager: StageManager = StageManager()
     stagemanager.add_files(allsizes)
 
-    retryinterval = 60
+    retryinterval: int = 60
     with tqdm.tqdm(
         total=totalsize, unit="B", unit_scale=True, unit_divisor=1024
     ) as pbar:
         while True:
-            starttime = int(time.time())
+            starttime: int = int(time.time())
             _, releasedbytes = stagemanager.checkstaged()
             # TODO: create option to print released files to stdout
             pbar.update(releasedbytes)
             # stop staging if no files are left to be staged
             if len(stagemanager.files2stage) == 0:
-                logging.info("No stagging requests left.")
+                logging.info("No staging requests left.")
                 print("staging done", file=sys.stderr)
                 break
 
-            sleeping(retryinterval, starttime)
+            _sleep_with_interrupt(retryinterval, starttime)
 
 
-def sleeping(retryinterval, starttime):
-    sleeptime = retryinterval - (int(time.time()) - starttime)
-    # increase retry interval if sleeptime is to small, so progress bar is shown
+def _sleep_with_interrupt(retryinterval: int, starttime: int) -> None:
+    """
+    Sleep with interrupt capability.
+    
+    :param retryinterval: Retry interval in seconds
+    :param starttime: Start time timestamp
+    """
+    sleeptime: int = retryinterval - (int(time.time()) - starttime)
+    # increase retry interval if sleeptime is too small, so progress bar is shown
     if sleeptime < 20:
         retryinterval *= 2
         sleeptime = 60
-        # print(sleeptime)
     logging.debug(f"sleep until next online check {max(0, sleeptime)} seconds")
-    # sleep interval of 1 sec makes it able to exit the script with control+c
-    # after one sec instead of 600 sec
+    # sleep interval of 0.1 sec makes it able to exit the script with control+c
+    # after a short time instead of waiting for the full interval
 
     for _ in range(max(0, sleeptime * 10)):
         time.sleep(0.1)
