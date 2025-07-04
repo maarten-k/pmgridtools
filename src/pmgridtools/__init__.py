@@ -12,4 +12,4 @@ __email__ = "maarten@oyat.nl"
 # from .grid2d import Grid2D
 # from .exceptions import GridError, IndexOutOfBoundsError
 
-__all__ = []
+__all__: list[str] = []

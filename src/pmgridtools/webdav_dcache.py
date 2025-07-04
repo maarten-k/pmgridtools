@@ -71,9 +71,7 @@ class WebDav:
             "{http://srm.lbl.gov/StorageResourceManager}AccessLatency",
         )
 
-    def _extract_locality_and_access_latency(
-        self, xml_in: str, url: str, extract_element: str
-    ) -> str:
+    def _extract_locality_and_access_latency(self, xml_in: str, url: str, extract_element: str) -> str:
         """
         Extract locality or access latency from XML response.
 
@@ -83,9 +81,7 @@ class WebDav:
         :return: Extracted value
         """
         upd: str = xml_in
-        responds: requests.Response = self.session.request(
-            "PROPFIND", url, data=upd, timeout=self.timeout
-        )
+        responds: requests.Response = self.session.request("PROPFIND", url, data=upd, timeout=self.timeout)
         try:
             root = ET.fromstring(responds.content)
         except ET.ParseError as e:
@@ -93,7 +89,11 @@ class WebDav:
                 raise FileNotFoundError(f"Could not found {url}") from e
             else:
                 raise ET.ParseError from e
-        return [elem.text for elem in root.iter(extract_element)][0]
+
+        elements = [elem.text for elem in root.iter(extract_element) if elem.text is not None]
+        if not elements:
+            raise ValueError(f"No {extract_element} found in response")
+        return elements[0]
 
     def md5sum(self, url: str) -> str:
         """
@@ -110,9 +110,7 @@ class WebDav:
 
         :param url: File URL
         """
-        response: requests.Response = self.session.request(
-            "DELETE", url, timeout=self.timeout
-        )
+        response: requests.Response = self.session.request("DELETE", url, timeout=self.timeout)
         print(response)
 
     def move(self, urlfrom: str, urlto: str) -> None:
@@ -157,9 +155,7 @@ class WebDav:
         :param url: File URL
         :return: File size in bytes
         """
-        response: requests.Response = self.session.request(
-            "HEAD", url, timeout=self.timeout
-        )
+        response: requests.Response = self.session.request("HEAD", url, timeout=self.timeout)
         if response.status_code == 200:
             return int(response.headers["Content-Length"])
         elif response.status_code == 404:
@@ -167,9 +163,7 @@ class WebDav:
         elif response.status_code == 403:
             raise PermissionError(f"response code {response.status_code} : {url}")
         else:
-            raise ValueError(
-                f"response code not a default value (expected 200 or 404){response.status_code} : {url}"
-            )
+            raise ValueError(f"response code not a default value (expected 200 or 404){response.status_code} : {url}")
 
     def cat(self, url: str) -> bytes:
         """
@@ -187,9 +181,7 @@ class WebDav:
         :param url: File URL
         :return: True if file exists, False otherwise
         """
-        response: requests.Response = self.session.request(
-            "HEAD", url, timeout=self.timeout
-        )
+        response: requests.Response = self.session.request("HEAD", url, timeout=self.timeout)
         if response.status_code == 200:
             return True
         elif response.status_code == 404:
@@ -197,9 +189,7 @@ class WebDav:
         elif response.status_code == 403:
             raise PermissionError(f"response code {response.status_code} : {url}")
         else:
-            raise ValueError(
-                f"response code not a default value (expected 200 or 404){response.status_code} {url}"
-            )
+            raise ValueError(f"response code not a default value (expected 200 or 404){response.status_code} {url}")
 
     def _get_head(self, url: str) -> requests.Response:
         """

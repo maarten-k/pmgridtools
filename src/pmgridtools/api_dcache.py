@@ -81,13 +81,13 @@ class dcacheapy:
         headers: Dict[str, str] = {"accept": "application/json"}
         url: str = f"{self.api}/namespace/{pnfs}"
         # Make the GET request
-        response: requests.Response = self.session.get(
-            url, params=params, headers=headers
-        )
+        response: requests.Response = self.session.get(url, params=params, headers=headers)
 
         # Handle the response
         if response.ok:
-            return response.json()["fileLocality"]
+            json_response = response.json()
+            file_locality: str = json_response["fileLocality"]
+            return file_locality
         else:
             raise RuntimeError(f"API request failed: {response}")
 
@@ -121,9 +121,7 @@ class dcacheapy:
 
         :param url: File URL
         """
-        response: requests.Response = self.session.request(
-            "DELETE", url, timeout=self.timeout
-        )
+        response: requests.Response = self.session.request("DELETE", url, timeout=self.timeout)
         print(response)
 
     def move(self, urlfrom: str, urlto: str) -> None:
@@ -177,9 +175,7 @@ class dcacheapy:
         elif response.status_code == 403:
             raise PermissionError(f"response code {response.status_code} : {url}")
         else:
-            raise ValueError(
-                f"response code not a default value (expected 200 or 404){response.status_code} : {url}"
-            )
+            raise ValueError(f"response code not a default value (expected 200 or 404){response.status_code} : {url}")
 
     def cat(self, url: str) -> bytes:
         """
@@ -197,9 +193,7 @@ class dcacheapy:
         :param url: File URL
         :return: True if file exists, False otherwise
         """
-        response: requests.Response = self.session.request(
-            "HEAD", url, timeout=self.timeout
-        )
+        response: requests.Response = self.session.request("HEAD", url, timeout=self.timeout)
         if response.status_code == 200:
             return True
         elif response.status_code == 404:
@@ -207,9 +201,7 @@ class dcacheapy:
         elif response.status_code == 403:
             raise PermissionError(f"response code {response.status_code} : {url}")
         else:
-            raise ValueError(
-                f"response code not a default value (expected 200 or 404){response.status_code} {url}"
-            )
+            raise ValueError(f"response code not a default value (expected 200 or 404){response.status_code} {url}")
 
     def _get_head(self, url: str) -> requests.Response:
         """

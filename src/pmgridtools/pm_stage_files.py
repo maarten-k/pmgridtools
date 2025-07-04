@@ -108,16 +108,12 @@ def main() -> None:
     """Main entry point for the pm_stage_files script."""
     logger: logging.Logger = logging.getLogger()
     handler: logging.StreamHandler = logging.StreamHandler()
-    formatter: logging.Formatter = logging.Formatter(
-        "%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
-    )
+    formatter: logging.Formatter = logging.Formatter("%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     logger.setLevel(logging.WARN)
 
-    parser: argparse.ArgumentParser = argparse.ArgumentParser(
-        description="stage files from tape"
-    )
+    parser: argparse.ArgumentParser = argparse.ArgumentParser(description="stage files from tape")
     parser.add_argument(
         "to_stage_raw",
         metavar="N",
@@ -169,9 +165,7 @@ def main() -> None:
     stagemanager.add_files(allsizes)
 
     retryinterval: int = 60
-    with tqdm.tqdm(
-        total=totalsize, unit="B", unit_scale=True, unit_divisor=1024
-    ) as pbar:
+    with tqdm.tqdm(total=totalsize, unit="B", unit_scale=True, unit_divisor=1024) as pbar:
         while True:
             starttime: int = int(time.time())
             _, releasedbytes = stagemanager.checkstaged()
