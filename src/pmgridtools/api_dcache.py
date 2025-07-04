@@ -1,5 +1,5 @@
 import os
-from typing import Dict, List, Union, Any
+from typing import Any, Dict, List, Union
 
 import requests
 
@@ -52,7 +52,10 @@ class dcacheapy:
         if isinstance(pnfs, str):
             pnfs = [pnfs]
 
-        headers: Dict[str, str] = {"accept": "application/json", "content-type": "application/json"}
+        headers: Dict[str, str] = {
+            "accept": "application/json",
+            "content-type": "application/json",
+        }
         data: Dict[str, Any] = {
             "activity": "PIN",
             "arguments": {"lifetime": lifetime, "lifetimeUnit": "HOURS"},
@@ -78,7 +81,9 @@ class dcacheapy:
         headers: Dict[str, str] = {"accept": "application/json"}
         url: str = f"{self.api}/namespace/{pnfs}"
         # Make the GET request
-        response: requests.Response = self.session.get(url, params=params, headers=headers)
+        response: requests.Response = self.session.get(
+            url, params=params, headers=headers
+        )
 
         # Handle the response
         if response.ok:
@@ -116,7 +121,9 @@ class dcacheapy:
 
         :param url: File URL
         """
-        response: requests.Response = self.session.request("DELETE", url, timeout=self.timeout)
+        response: requests.Response = self.session.request(
+            "DELETE", url, timeout=self.timeout
+        )
         print(response)
 
     def move(self, urlfrom: str, urlto: str) -> None:
@@ -190,7 +197,9 @@ class dcacheapy:
         :param url: File URL
         :return: True if file exists, False otherwise
         """
-        response: requests.Response = self.session.request("HEAD", url, timeout=self.timeout)
+        response: requests.Response = self.session.request(
+            "HEAD", url, timeout=self.timeout
+        )
         if response.status_code == 200:
             return True
         elif response.status_code == 404:

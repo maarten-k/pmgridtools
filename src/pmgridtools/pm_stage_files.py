@@ -47,7 +47,7 @@ def get_pnfs(url: str) -> str:
 
 class StageManager:
     """Manages file staging operations."""
-    
+
     def __init__(self) -> None:
         """Initialize the StageManager."""
         self.files2stage: Dict[str, int] = {}
@@ -57,7 +57,7 @@ class StageManager:
     def add_files(self, jobs: Dict[str, int]) -> None:
         """
         Add files to the staging queue.
-        
+
         :param jobs: Dictionary mapping file paths to file sizes
         """
         self.files2stage = jobs
@@ -65,7 +65,7 @@ class StageManager:
     def stage(self, max_stage_gb: int = 200) -> None:
         """
         Stage files up to the specified limit.
-        
+
         :param max_stage_gb: Maximum data to stage in GB
         """
         # TODO: check amount of data already staged
@@ -84,7 +84,7 @@ class StageManager:
     def checkstaged(self) -> Tuple[Set[str], int]:
         """
         Check which files have been staged and update internal state.
-        
+
         :return: Tuple of (released files set, total size released)
         """
         self.stage()
@@ -108,12 +108,16 @@ def main() -> None:
     """Main entry point for the pm_stage_files script."""
     logger: logging.Logger = logging.getLogger()
     handler: logging.StreamHandler = logging.StreamHandler()
-    formatter: logging.Formatter = logging.Formatter("%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
+    formatter: logging.Formatter = logging.Formatter(
+        "%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
+    )
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     logger.setLevel(logging.WARN)
 
-    parser: argparse.ArgumentParser = argparse.ArgumentParser(description="stage files from tape")
+    parser: argparse.ArgumentParser = argparse.ArgumentParser(
+        description="stage files from tape"
+    )
     parser.add_argument(
         "to_stage_raw",
         metavar="N",
@@ -185,7 +189,7 @@ def main() -> None:
 def _sleep_with_interrupt(retryinterval: int, starttime: int) -> None:
     """
     Sleep with interrupt capability.
-    
+
     :param retryinterval: Retry interval in seconds
     :param starttime: Start time timestamp
     """

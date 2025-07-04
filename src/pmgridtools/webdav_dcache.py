@@ -1,6 +1,5 @@
 import os
 import xml.etree.ElementTree as ET
-from typing import List
 
 import requests
 
@@ -45,7 +44,7 @@ class WebDav:
     def locality(self, url: str) -> str:
         """
         Get file locality information.
-        
+
         :param url: File URL
         :return: File locality (ONLINE, NEARLINE, or ONLINE_AND_NEARLINE)
         """
@@ -72,17 +71,21 @@ class WebDav:
             "{http://srm.lbl.gov/StorageResourceManager}AccessLatency",
         )
 
-    def _extract_locality_and_access_latency(self, xml_in: str, url: str, extract_element: str) -> str:
+    def _extract_locality_and_access_latency(
+        self, xml_in: str, url: str, extract_element: str
+    ) -> str:
         """
         Extract locality or access latency from XML response.
-        
+
         :param xml_in: XML request body
         :param url: File URL
         :param extract_element: XML element to extract
         :return: Extracted value
         """
         upd: str = xml_in
-        responds: requests.Response = self.session.request("PROPFIND", url, data=upd, timeout=self.timeout)
+        responds: requests.Response = self.session.request(
+            "PROPFIND", url, data=upd, timeout=self.timeout
+        )
         try:
             root = ET.fromstring(responds.content)
         except ET.ParseError as e:
@@ -107,7 +110,9 @@ class WebDav:
 
         :param url: File URL
         """
-        response: requests.Response = self.session.request("DELETE", url, timeout=self.timeout)
+        response: requests.Response = self.session.request(
+            "DELETE", url, timeout=self.timeout
+        )
         print(response)
 
     def move(self, urlfrom: str, urlto: str) -> None:
@@ -152,7 +157,9 @@ class WebDav:
         :param url: File URL
         :return: File size in bytes
         """
-        response: requests.Response = self.session.request("HEAD", url, timeout=self.timeout)
+        response: requests.Response = self.session.request(
+            "HEAD", url, timeout=self.timeout
+        )
         if response.status_code == 200:
             return int(response.headers["Content-Length"])
         elif response.status_code == 404:
@@ -180,7 +187,9 @@ class WebDav:
         :param url: File URL
         :return: True if file exists, False otherwise
         """
-        response: requests.Response = self.session.request("HEAD", url, timeout=self.timeout)
+        response: requests.Response = self.session.request(
+            "HEAD", url, timeout=self.timeout
+        )
         if response.status_code == 200:
             return True
         elif response.status_code == 404:
