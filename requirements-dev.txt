@@ -10,6 +10,8 @@ black
 isort
 flake8
 mypy
+types-tqdm
+types-requests
 
 # Documentation
 sphinx
