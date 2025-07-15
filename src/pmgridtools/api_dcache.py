@@ -89,7 +89,12 @@ class dcacheapy:
             file_locality: str = json_response["fileLocality"]
             return file_locality
         else:
-            raise RuntimeError(f"API request failed: {response}")
+            if response.status_code == 404:
+                raise FileNotFoundError(f"File not found: {pnfs}")
+            elif response.status_code == 403:
+                raise PermissionError(f"Permission denied for {pnfs}")
+            else:
+                raise RuntimeError(f"API request failed: {response}")
 
     # def access_latency(self, url):
     #     """

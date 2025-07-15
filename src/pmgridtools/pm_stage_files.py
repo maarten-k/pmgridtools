@@ -33,6 +33,11 @@ def get_pnfs(url: str) -> str:
                 "/project/projectmine/Data/GridStorage/",
                 "/pnfs/grid.sara.nl/data/lsgrid/Project_MinE/",
             )
+        elif url.startswith("/projectmine-nfs/"):
+            pnfs = url.replace(
+                "/projectmine-nfs/",
+                "/pnfs/grid.sara.nl/data/lsgrid/Project_MinE/",
+            )
         else:
             print(
                 f"Invalid URL: only gsiftp:// or local paths under /project/projectmine/Data/GridStorage/ "
@@ -147,7 +152,7 @@ def main() -> None:
                 cleanpnfs_offline.append(pnfs)
             else:
                 files2pin.append(pnfs)
-        except FileNotFoundError:
+        except FileNotFoundError,:
             print(f"could not find {pnfs}. skip staging this file", file=sys.stderr)
 
     # TODO: pin files that are already staged
