@@ -152,7 +152,7 @@ def main() -> None:
                 cleanpnfs_offline.append(pnfs)
             else:
                 files2pin.append(pnfs)
-        except FileNotFoundError,:
+        except FileNotFoundError:
             print(f"could not find {pnfs}. skip staging this file", file=sys.stderr)
 
     # TODO: pin files that are already staged
